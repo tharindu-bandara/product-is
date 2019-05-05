@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Identity-suite-initializer">
+<suite name="Identity-suite-initializer" parallel="false" thread-count="1">
     <parameter name="useDefaultListeners" value="false"/>
     <listeners>
         <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestExecutionListener"/>
@@ -63,7 +63,7 @@
             <class name="org.wso2.identity.integration.test.user.profile.mgt.UserProfileMgtTestCase"/>
             <class name="org.wso2.identity.integration.test.saml.SPMetadataTestCase"/>
             <class name="org.wso2.identity.integration.test.saml.IDPMetadataTestCase"/>
-            <class name="org.wso2.identity.integration.test.provisioning.JustInTimeProvisioningTestCase"/>
+           <!-- <class name="org.wso2.identity.integration.test.provisioning.JustInTimeProvisioningTestCase"/>-->
             <class name="org.wso2.identity.integration.test.idp.mgt.IdentityProviderManagementTestCase" />
             <class name="org.wso2.identity.integration.test.entitlement.EntitlementSecurityTestCase"/>
             <class name="org.wso2.identity.integration.test.entitlement.EntitlementRestServiceTestCase"/>
@@ -93,7 +93,8 @@
             <class name="org.wso2.identity.integration.test.user.mgt.ReadWriteLdapBasedUserMgtTestCase"/>
             <class name="org.wso2.identity.integration.test.user.mgt.ReadWriteLDAPUserStoreManagerTestCase"/>
             <class name="org.wso2.identity.integration.test.oauth2.dcrm.api.OAuthDCRMTestCase"/>
-            <class name="org.wso2.identity.integration.test.auth.RiskBasedLoginTestCase" />
+            <!-- TODO this test has a restart-->
+           <!-- <class name="org.wso2.identity.integration.test.auth.RiskBasedLoginTestCase" />-->
             <!--<class name="org.wso2.identity.integration.test.functions.library.mgt.FunctionLibraryManagementTestCase"/>-->
         </classes>
     </test>
