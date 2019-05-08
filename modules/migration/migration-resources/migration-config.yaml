@@ -293,3 +293,8 @@ versions:
       parameters:
         location: "step3"
         schema: "identity"
+    -
+      name: "OAuthDataMigrator"
+      order: 5
+      parameters:
+        schema: "identity"
