@@ -16,7 +16,7 @@ CREATE PROCEDURE create_index_if_not_column_is_partly_indexed(partlyIndexedColum
 
 DROP PROCEDURE IF EXISTS add_column_if_not_exists_with_default_val;
 
-CREATE PROCEDURE add_column_if_not_exists_with_default_val(table_name VARCHAR (64), column_name VARCHAR (64),data_type VARCHAR (64), default_val VARCHAR (64)) BEGIN IF EXISTS( SELECT NULL       FROM INFORMATION_SCHEMA.COLUMNS       WHERE table_name = table_name        AND column_name = column_name) THEN  SET @query = CONCAT('ALTER TABLE ', table_name, ' ADD COLUMN ', column_name, ' ', data_type, ' NOT NULL default ', default_val);  PREPARE statement FROM @query;  EXECUTE statement; END IF;END;
+CREATE PROCEDURE add_column_if_not_exists_with_default_val(table_name VARCHAR(64), column_name VARCHAR(64), data_type  VARCHAR(64), default_val VARCHAR(64)) BEGIN  IF EXISTS(SELECT NULL FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = table_name AND column_name = column_name) THEN START TRANSACTION; SET @query = CONCAT('ALTER TABLE ', table_name, ' ADD COLUMN ', column_name, ' ', data_type, ' NOT NULL default ', default_val); PREPARE statement FROM @query; EXECUTE statement; SET @query = CONCAT('ALTER TABLE ', table_name, ' ALTER COLUMN ', column_name, ' drop default'); PREPARE statement FROM @query; EXECUTE statement; COMMIT; END IF;END;
 
 CALL add_column_if_not_exists_with_default_val('IDN_OAUTH2_AUTHORIZATION_CODE', 'IDP_ID', 'int', '-1');
 
