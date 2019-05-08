@@ -58,8 +58,7 @@ public class IDPIDColumnAdditionInH2Migrator extends Migrator {
                     }
                 }
             } else {
-                log.info("IDP ID column is added with schema migrators for this env: "
-                        + connection.getMetaData().getDriverName().contains("H2") + ", thus skipping.");
+                log.info("IDP ID column is added with schema migrators for this environment, thus skipping.");
             }
         } catch (SQLException e) {
             log.error("Error while obtaining connection from identity data source.", e);
