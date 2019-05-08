@@ -33,6 +33,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.um.ws.api.stub.RemoteUserStoreManagerServiceUserStoreExceptionException;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.identity.integration.common.clients.UserManagementClient;
+import org.wso2.identity.integration.common.clients.authorization.mgt.RemoteAuthorizationManagerServiceClient;
 import org.wso2.identity.integration.common.clients.user.store.config.UserStoreConfigAdminServiceClient;
 import org.wso2.identity.integration.common.clients.usermgt.remote.RemoteUserStoreManagerServiceClient;
 import org.wso2.identity.integration.common.utils.UserStoreConfigUtils;
@@ -41,6 +42,7 @@ import org.wso2.identity.integration.test.util.Utils;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
+import java.io.IOException;
 import java.rmi.RemoteException;
 
 public class JustInTimeProvisioningTestCase extends SAMLIdentityFederationTestCase {
@@ -63,6 +65,26 @@ public class JustInTimeProvisioningTestCase extends SAMLIdentityFederationTestCa
             userMgtClient = new UserManagementClient(backendURL, getSessionCookie());
             userStoreClient = new RemoteUserStoreManagerServiceClient(getBackendURL(), getSessionCookie());
             userStoreConfigAdminServiceClient = new UserStoreConfigAdminServiceClient(getBackendURL(), sessionCookie);
+            RemoteAuthorizationManagerServiceClient remoteAuthorizationManagerServiceClient =
+                    new RemoteAuthorizationManagerServiceClient(getBackendURL(), getSessionCookie());
+
+            log.info("login user name : " + isServer.getSuperTenant().getTenantAdmin().getUserName());
+            log.info("login password : " + isServer.getSuperTenant().getTenantAdmin().getPassword());
+            for (String role : userStoreClient.getRoleListOfUser(isServer.getSuperTenant().getTenantAdmin().getUserName())) {
+                boolean roleAuthorized = remoteAuthorizationManagerServiceClient.isRoleAuthorized(role,
+                        "/permission/admin/manage/identity/rolemgt/create", "ui.execute");
+                log.info("Role Authorization :" + roleAuthorized + " role: " + role);
+            }
+
+            boolean isUserAuthorized = remoteAuthorizationManagerServiceClient.isUserAuthorized(isServer.getSuperTenant().getTenantAdmin()
+                    .getUserName(), "/permission/admin/manage/identity/rolemgt/create", "ui.execute");
+            log.info("User Authorization :" + isUserAuthorized);
+            remoteAuthorizationManagerServiceClient.authorizeUser(isServer.getSuperTenant().getTenantAdmin().
+                    getUserName(), "/permission/admin/", "ui.execute");
+            boolean isAuthorized = remoteAuthorizationManagerServiceClient.isUserAuthorized(isServer.getSuperTenant().getTenantAdmin()
+                    .getUserName(), "/permission/admin/manage/identity/rolemgt/create", "ui.execute");
+            log.info("User Authorization details :" + isAuthorized);
+
             userMgtClient.addInternalRole("loginJIT", null, new String[]{"/permission/admin/login"});
             addSecondaryUserStore();
 
@@ -75,8 +97,13 @@ public class JustInTimeProvisioningTestCase extends SAMLIdentityFederationTestCa
     @AfterClass(alwaysRun = true)
     public void endTest() throws Exception {
 
-        super.endTest();
-        userStoreConfigAdminServiceClient.deleteUserStore(DOMAIN_ID);
+        try {
+            super.endTest();
+            userStoreConfigAdminServiceClient.deleteUserStore(DOMAIN_ID);
+        } catch (IOException e) {
+            log.error("Error while shutting down the server. ");
+        }
+
     }
 
     @Override

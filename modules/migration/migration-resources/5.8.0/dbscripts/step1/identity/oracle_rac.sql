@@ -86,3 +86,7 @@ skip_index_if_exists('CREATE INDEX IDX_AUTH_USER_UN_TID_DN ON IDN_AUTH_USER (USE
 
 skip_index_if_exists('CREATE INDEX IDX_AUTH_USER_DN_TOD ON IDN_AUTH_USER (DOMAIN_NAME, TENANT_ID)')
 END;
+/
+
+DROP PROCEDURE skip_index_if_exists
+/

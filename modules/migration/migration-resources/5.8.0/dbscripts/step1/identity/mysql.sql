@@ -97,3 +97,5 @@ CALL skip_index_if_exists('IDX_ATS_TID','IDN_OAUTH2_ACCESS_TOKEN_SCOPE','(TOKEN_
 CALL skip_index_if_exists('IDX_AUTH_USER_UN_TID_DN','IDN_AUTH_USER ','(USER_NAME, TENANT_ID, DOMAIN_NAME)');
 
 CALL skip_index_if_exists('IDX_AUTH_USER_DN_TOD','IDN_AUTH_USER ','(DOMAIN_NAME, TENANT_ID)');
+
+DROP PROCEDURE IF EXISTS skip_index_if_exists;

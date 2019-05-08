@@ -125,7 +125,7 @@ public class RiskBasedLoginTestCase extends AbstractAdaptiveAuthenticationTestCa
         String authenticatorWebappPathString = Utils.getResidentCarbonHome()
                 + File.separator + "repository" + File.separator + "deployment" + File.separator
                 + "server" + File.separator + "webapps" + File.separator + "sample-auth";
-        waitForWebappToDeploy(authenticatorWebappPathString, 60000L);
+        waitForWebappToDeploy(authenticatorWebappPathString, 120000L);
 
         log.info("Copied the demo authenticator war file to " + authenticatorWarPathString);
         Assert.assertTrue(Files.exists(Paths.get(authenticatorWarPathString)), "Demo Authenticator war is not copied " +
@@ -133,7 +133,7 @@ public class RiskBasedLoginTestCase extends AbstractAdaptiveAuthenticationTestCa
 
         log.info("Restarting the server at: " + isServer.getContextUrls().getBackEndUrl());
         serverConfigurationManager = new ServerConfigurationManager(isServer);
-        serverConfigurationManager.restartGracefully();
+        serverConfigurationManager.restartForcefully();
         log.info("Restarting the server at: " + isServer.getContextUrls().getBackEndUrl() + " is successful");
 
         super.init();
@@ -176,6 +176,7 @@ public class RiskBasedLoginTestCase extends AbstractAdaptiveAuthenticationTestCa
 
         while (System.currentTimeMillis() - startTime < timeout) {
             if (Files.exists(Paths.get(authenticatorWebappPathString))) {
+                log.info(authenticatorWebappPathString + " deployed successfully.");
                 break;
             }
             try {
