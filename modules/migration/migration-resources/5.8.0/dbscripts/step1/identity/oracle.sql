@@ -45,8 +45,30 @@ exception
 end;
 END;
 
+CREATE OR REPLACE PROCEDURE add_column_if_not_exists (query IN VARCHAR2, cleanup IN VARCHAR2)
+IS
+BEGIN
+declare
+  already_exists  exception;
+  pragma exception_init( already_exists, -955 );
+begin
+  execute immediate query;
+  execute immediate cleanup;
+  dbms_output.put_line( 'created' );
+exception
+  when already_exists then
+  dbms_output.put_line( 'skipped' );
+end;
+END;
 
 BEGIN
+
+add_column_if_not_exists('ALTER TABLE IDN_OAUTH2_AUTHORIZATION_CODE ADD IDP_ID INTEGER DEFAULT -1 NOT NULL', 'ALTER TABLE IDN_OAUTH2_AUTHORIZATION_CODE MODIFY IDP_ID INTEGER DEFAULT NULL')
+
+add_column_if_not_exists('ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN ADD IDP_ID INTEGER DEFAULT -1 NOT NULL', 'ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN MODIFY IDP_ID INTEGER DEFAULT NULL')
+
+add_column_if_not_exists('ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN_AUDIT ADD IDP_ID INTEGER DEFAULT -1 NOT NULL', 'ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN_AUDIT MODIFY IDP_ID INTEGER DEFAULT NULL')
+
 skip_index_if_exists('CREATE INDEX IDX_USER_ID ON IDN_AUTH_USER_SESSION_MAPPING (USER_ID)')
 
 skip_index_if_exists('CREATE INDEX IDX_SESSION_ID ON IDN_AUTH_USER_SESSION_MAPPING (SESSION_ID)')
@@ -87,6 +109,34 @@ skip_index_if_exists('CREATE INDEX IDX_AUTH_USER_UN_TID_DN ON IDN_AUTH_USER (USE
 
 skip_index_if_exists('CREATE INDEX IDX_AUTH_USER_DN_TOD ON IDN_AUTH_USER (DOMAIN_NAME, TENANT_ID)')
 END;
+/
+
+CREATE OR REPLACE PROCEDURE add_idp_id_to_con_app_key
+IS
+  BEGIN
+    declare
+      column_count INTEGER;
+    begin
+      select count(*) INTO column_count
+      from all_ind_columns
+      where INDEX_OWNER IN (select user from dual)
+        AND TABLE_NAME = 'IDN_OAUTH2_ACCESS_TOKEN'
+        AND INDEX_NAME = 'CON_APP_KEY'
+        AND COLUMN_NAME = 'TOKEN_ID';
+      IF (column_count > 0)
+      THEN
+        execute immediate 'ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN DROP CONSTRAINT CON_APP_KEY';
+        execute immediate 'ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN ADD CONSTRAINT CON_APP_KEY UNIQUE (CONSUMER_KEY_ID, AUTHZ_USER, TENANT_ID, USER_DOMAIN, USER_TYPE, TOKEN_SCOPE_HASH, TOKEN_STATE, TOKEN_STATE_ID, IDP_ID)';
+      END IF;
+    end;
+  END;
+
+BEGIN
+  add_idp_id_to_con_app_key();
+end;
+/
+
+DROP PROCEDURE add_idp_id_to_con_app_key
 /
 
 DROP PROCEDURE skip_index_if_exists
