@@ -6,23 +6,17 @@ ALTER TABLE IDN_OAUTH1A_REQUEST_TOKEN MODIFY CALLBACK_URL VARCHAR(2048);
 
 ALTER TABLE IDN_OAUTH2_AUTHORIZATION_CODE MODIFY CALLBACK_URL VARCHAR(2048);
 
-DROP PROCEDURE IF EXISTS skip_index_if_exists;
-
-CREATE PROCEDURE skip_index_if_exists(indexName varchar(64),tableName varchar(64), tableColumns varchar(255)) BEGIN  IF((SELECT COUNT(*) AS index_exists FROM information_schema.statistics WHERE TABLE_SCHEMA = DATABASE() and table_name = tableName AND index_name = indexName) = 0) THEN SET @s = CONCAT('CREATE INDEX ' , indexName , ' ON ' , tableName, tableColumns); PREPARE stmt FROM @s; EXECUTE stmt; END IF; END;
-
-DROP PROCEDURE IF EXISTS create_index_if_not_column_is_partly_indexed;
-
-CREATE PROCEDURE create_index_if_not_column_is_partly_indexed(partlyIndexedColumn varchar(64), indexName varchar(64), tableName varchar(64), columns varchar(64)) BEGIN  DECLARE indexColumnCount BIGINT;  DECLARE subPartValue BIGINT;  SELECT SUB_PART INTO subPartValue  FROM information_schema.statistics  WHERE TABLE_SCHEMA = DATABASE()    and table_name = tableName    AND index_name = indexName    AND COLUMN_NAME = partlyIndexedColumn;  SELECT COUNT(*) AS index_exists INTO indexColumnCount  FROM information_schema.statistics  WHERE TABLE_SCHEMA = DATABASE()    and table_name = tableName    AND index_name = indexName    AND COLUMN_NAME = partlyIndexedColumn;  IF (subPartValue IS NULL)  THEN    START TRANSACTION; IF(indexColumnCount > 0) THEN SET @dropQuery = CONCAT('DROP INDEX ', indexName, ' ON ', tableName);      PREPARE dropStatement FROM @dropQuery;      EXECUTE dropStatement;    END IF;    SET @createQuery = CONCAT('CREATE INDEX ', indexName, ' ON ', tableName, columns);    PREPARE createStatement FROM @createQuery;    EXECUTE createStatement;    COMMIT;  END IF;END;
-
 DROP PROCEDURE IF EXISTS add_column_if_not_exists_with_default_val;
 
-CREATE PROCEDURE add_column_if_not_exists_with_default_val(table_name VARCHAR(64), column_name VARCHAR(64), data_type  VARCHAR(64), default_val VARCHAR(64)) BEGIN  IF EXISTS(SELECT NULL FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = table_name AND column_name = column_name) THEN START TRANSACTION; SET @query = CONCAT('ALTER TABLE ', table_name, ' ADD COLUMN ', column_name, ' ', data_type, ' NOT NULL default ', default_val); PREPARE statement FROM @query; EXECUTE statement; SET @query = CONCAT('ALTER TABLE ', table_name, ' ALTER COLUMN ', column_name, ' drop default'); PREPARE statement FROM @query; EXECUTE statement; COMMIT; END IF;END;
+CREATE PROCEDURE add_column_if_not_exists_with_default_val(tbl_name VARCHAR(64), clmn_name VARCHAR(64), data_type VARCHAR(64), default_val VARCHAR(64)) BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END; SET @query = CONCAT('ALTER TABLE ', tbl_name, ' ADD COLUMN ', clmn_name, ' ', data_type, ' NOT NULL default ', default_val); PREPARE statement FROM @query; EXECUTE statement; SET @query = CONCAT('ALTER TABLE ', tbl_name, ' ALTER COLUMN ', clmn_name, ' drop default'); PREPARE statement FROM @query; EXECUTE statement; END;
 
 CALL add_column_if_not_exists_with_default_val('IDN_OAUTH2_AUTHORIZATION_CODE', 'IDP_ID', 'int', '-1');
 
 CALL add_column_if_not_exists_with_default_val('IDN_OAUTH2_ACCESS_TOKEN', 'IDP_ID', 'INT', '-1');
 
 CALL add_column_if_not_exists_with_default_val('IDN_OAUTH2_ACCESS_TOKEN_AUDIT', 'IDP_ID', 'INT', '-1');
+
+DROP PROCEDURE IF EXISTS add_column_if_not_exists_with_default_val;
 
 ALTER TABLE IDN_OAUTH2_ACCESS_TOKEN DROP INDEX CON_APP_KEY;
 
@@ -42,11 +36,21 @@ CREATE TABLE IF NOT EXISTS IDN_AUTH_USER_SESSION_MAPPING (
 	SESSION_ID VARCHAR(255) NOT NULL,
 	CONSTRAINT USER_SESSION_STORE_CONSTRAINT UNIQUE (USER_ID, SESSION_ID));
 
+DROP PROCEDURE IF EXISTS handle_partly_index;
+
+CREATE PROCEDURE handle_partly_index() BEGIN DECLARE indexColumnCount BIGINT; DECLARE subPartValue BIGINT; SELECT SUB_PART INTO subPartValue FROM information_schema.statistics WHERE TABLE_SCHEMA = DATABASE() and table_name = 'IDN_SCIM_GROUP' AND index_name = 'IDX_IDN_SCIM_GROUP_TI_RN_AN' AND COLUMN_NAME = 'ATTR_NAME'; SELECT COUNT(*) AS index_exists INTO indexColumnCount FROM information_schema.statistics WHERE TABLE_SCHEMA = DATABASE() and table_name = 'IDN_SCIM_GROUP' AND index_name = 'IDX_IDN_SCIM_GROUP_TI_RN_AN' AND COLUMN_NAME = 'ATTR_NAME'; IF (subPartValue IS NULL) THEN START TRANSACTION; IF (indexColumnCount > 0) THEN SET @dropQuery = CONCAT('DROP INDEX ', 'IDX_IDN_SCIM_GROUP_TI_RN_AN', ' ON ', 'IDN_SCIM_GROUP'); PREPARE dropStatement FROM @dropQuery; EXECUTE dropStatement; END IF; SET @createQuery = CONCAT('CREATE INDEX ', 'IDX_IDN_SCIM_GROUP_TI_RN_AN', ' ON ', 'IDN_SCIM_GROUP', '(TENANT_ID, ROLE_NAME, ATTR_NAME(500))'); PREPARE createStatement FROM @createQuery; EXECUTE createStatement; COMMIT; END IF; END;
+
+call create_index_if_not_column_is_partly_indexed('ATTR_NAME', 'IDX_IDN_SCIM_GROUP_TI_RN_AN', 'IDN_SCIM_GROUP', '(TENANT_ID, ROLE_NAME, ATTR_NAME(500))');
+
+DROP PROCEDURE IF EXISTS handle_partly_index;
+
+DROP PROCEDURE IF EXISTS skip_index_if_exists;
+
+CREATE PROCEDURE skip_index_if_exists(indexName varchar(64), tableName varchar(64), tableColumns varchar(255)) BEGIN BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END; SET @s = CONCAT('CREATE INDEX ', indexName, ' ON ', tableName, tableColumns); PREPARE stmt FROM @s; EXECUTE stmt; END;END;
+
 CALL skip_index_if_exists('IDX_USER_ID', 'IDN_AUTH_USER_SESSION_MAPPING', '(USER_ID)');
 
 CALL skip_index_if_exists('IDX_SESSION_ID', 'IDN_AUTH_USER_SESSION_MAPPING', '(SESSION_ID)');
-
-call create_index_if_not_column_is_partly_indexed('ATTR_NAME', 'IDX_IDN_SCIM_GROUP_TI_RN_AN', 'IDN_SCIM_GROUP', '(TENANT_ID, ROLE_NAME, ATTR_NAME(500))');
 
 CALL skip_index_if_exists('IDX_OCA_UM_TID_UD_APN','IDN_OAUTH_CONSUMER_APPS','(USERNAME,TENANT_ID,USER_DOMAIN, APP_NAME)');
 
