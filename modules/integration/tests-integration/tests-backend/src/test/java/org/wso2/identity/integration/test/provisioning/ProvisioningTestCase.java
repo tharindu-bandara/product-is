@@ -378,6 +378,7 @@ public class ProvisioningTestCase extends ISIntegrationTest {
         //set the handler in wink client config
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.handlers(new ClientHandler[]{responseHandler});
+        clientConfig.readTimeout(300000);
         //create a wink rest client with the above config
         RestClient restClient = new RestClient(clientConfig);
         //create resource endpoint to access User resource
