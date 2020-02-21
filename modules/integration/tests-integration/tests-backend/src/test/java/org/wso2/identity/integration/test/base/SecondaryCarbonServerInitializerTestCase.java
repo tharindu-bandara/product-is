@@ -77,7 +77,6 @@ public class SecondaryCarbonServerInitializerTestCase extends AbstractIdentityFe
 
         LOG.info("Stopping secondary carbon server...");
         try {
-            resetServerConfiguration();
             super.stopCarbonServer(PORT_OFFSET_1);
             LOG.info("Secondary carbon server stopped.");
         } catch (AutomationFrameworkException e1) {
