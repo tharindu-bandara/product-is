@@ -168,16 +168,16 @@
 <!--    ====================================================================================================================-->
 <!--    &ndash;&gt;-->
 
-    <test name="is-tests-federation" preserve-order="true" parallel="false" group-by-instances="true">
-        <classes>
-            <class name="org.wso2.identity.integration.test.base.SecondaryCarbonServerInitializerTestCase"/>
-<!--            <class name="org.wso2.identity.integration.test.sts.TestPassiveSTSFederation"/>-->
-<!--            <class name="org.wso2.identity.integration.test.auth.ConditionalAuthenticationTestCase" />-->
-            <class name="org.wso2.identity.integration.test.provisioning.ProvisioningTestCase"/>
-<!--            <class name="org.wso2.identity.integration.test.workflow.mgt.WorkflowManagementTestCase"/>-->
-<!--            <class name="org.wso2.identity.integration.test.provisioning.JustInTimeProvisioningTestCase"/>-->
-        </classes>
-    </test>
+<!--    <test name="is-tests-federation" preserve-order="true" parallel="false" group-by-instances="true">-->
+<!--        <classes>-->
+<!--            <class name="org.wso2.identity.integration.test.base.SecondaryCarbonServerInitializerTestCase"/>-->
+<!--&lt;!&ndash;            <class name="org.wso2.identity.integration.test.sts.TestPassiveSTSFederation"/>&ndash;&gt;-->
+<!--&lt;!&ndash;            <class name="org.wso2.identity.integration.test.auth.ConditionalAuthenticationTestCase" />&ndash;&gt;-->
+<!--            <class name="org.wso2.identity.integration.test.provisioning.ProvisioningTestCase"/>-->
+<!--&lt;!&ndash;            <class name="org.wso2.identity.integration.test.workflow.mgt.WorkflowManagementTestCase"/>&ndash;&gt;-->
+<!--&lt;!&ndash;            <class name="org.wso2.identity.integration.test.provisioning.JustInTimeProvisioningTestCase"/>&ndash;&gt;-->
+<!--        </classes>-->
+<!--    </test>-->
 
 <!--    &lt;!&ndash;-->
 <!--    ====================================================================================================================-->
@@ -207,13 +207,13 @@
 <!--            <class name="org.wso2.identity.integration.test.user.mgt.JDBCUserStoreManagerTestCase"/>-->
 <!--        </classes>-->
 <!--    </test>-->
-<!--    <test name="is-tests-read-only-userstore" preserve-order="true" parallel="false" group-by-instances="true" >-->
-<!--        <classes>-->
-<!--            <class name="org.wso2.identity.integration.test.base.ReadOnlyUserStoreInitializerTestCase"/>-->
+    <test name="is-tests-read-only-userstore" preserve-order="true" parallel="false" group-by-instances="true" >
+        <classes>
+            <class name="org.wso2.identity.integration.test.base.ReadOnlyUserStoreInitializerTestCase"/>
 <!--            <class name="org.wso2.identity.integration.test.scim2.rest.api.SCIMUserUpdateReadOnlyTest"/>-->
-<!--            <class name="org.wso2.identity.integration.test.user.mgt.ReadOnlyLDAPUserStoreManagerTestCase"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+            <class name="org.wso2.identity.integration.test.user.mgt.ReadOnlyLDAPUserStoreManagerTestCase"/>
+        </classes>
+    </test>
 <!--    <test name="is-tests-oauth-jwt-token-gen-enabled" preserve-order="true" parallel="false" group-by-instances="true">-->
 <!--        <classes>-->
 <!--            <class name="org.wso2.identity.integration.test.oauth2.OAuth2ServiceAuthCodeGrantOpenIdRequestObjectTestCase"/>-->
