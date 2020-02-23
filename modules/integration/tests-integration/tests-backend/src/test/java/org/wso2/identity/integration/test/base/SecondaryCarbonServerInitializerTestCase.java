@@ -100,10 +100,4 @@ public class SecondaryCarbonServerInitializerTestCase extends AbstractIdentityFe
         serverConfigurationManager.applyConfigurationWithoutRestart(configuredTomlFile, defaultTomlFile, true);
         serverConfigurationManager.restartGracefully();
     }
-
-    private void resetServerConfiguration() throws Exception {
-
-        log.info("Restoring default config changes in the secondary server.");
-        serverConfigurationManager.restoreToLastConfiguration(false);
-    }
 }
